@@ -176,9 +176,9 @@ class Mentionable {
 	 */
 	public function admin_init(){
 		if (
-			'true' === get_user_option( 'rich_editing' ) 
-			&& 
-			in_array( self::$current_post_type, Mentionable_Settings::$options['post_types'] ) 
+			'true' === get_user_option( 'rich_editing' )
+			&&
+			in_array( self::$current_post_type, Mentionable_Settings::$options['post_types'] )
 		) {
 			add_filter( 'mce_external_plugins',  array( $this, 'register_tmce_plugin' ) );
 		}

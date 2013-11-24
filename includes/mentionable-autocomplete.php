@@ -29,25 +29,49 @@ class Mentionable_Autocomplete {
 			wp_send_json_error( 'Mention Word is not specified.' );
 		}
 
-		// This helps us search by post title
-		add_filter( 'posts_where', array( $this, 'posts_where_like_title' ), 10, 2 );
-
-		$query_args = array( 
-			'post_type'       => Mentionable_Settings::$options['autocomplete_post_types'],
-			'post_title_like' => $_REQUEST['mentionable_word'],
-			'fields'          => 'ids',
-			'posts_per_page'  => 5,
-		);
-
-		$query = new WP_Query( $query_args );
-
 		$results = array();
-		foreach ( $query->posts as $id ) {
-			$results[ get_the_title( $id ) ] = array(
-				'id'   => $id,
-				'url'  => get_permalink( $id ),
-				'type' => get_post_type( $id ),
-			);
+		switch( Mentionable_Settings::$options['autocomplete_object_type'] ) {
+
+		    case 'post':
+
+				// This helps us search by post title
+				add_filter( 'posts_where', array( $this, 'posts_where_like_title' ), 10, 2 );
+
+				$query = new WP_Query( array(
+					'post_type'       => Mentionable_Settings::$options['autocomplete_post_types'],
+					'post_title_like' => $_REQUEST['mentionable_word'],
+					'fields'          => 'ids',
+					'posts_per_page'  => 5,
+				) );
+
+				foreach ( $query->posts as $id ) {
+					$results[ get_the_title( $id ) ] = array(
+						'id'   => $id,
+						'url'  => get_permalink( $id ),
+						'type' => get_post_type( $id ),
+					);
+				}
+
+				break;
+
+		    case 'user':
+
+				$query = new WP_User_Query( array(
+					'search_columns' => array( 'ID', 'user_login', 'user_email' ),
+					'search' => rtrim( $_REQUEST['mentionable_word'], '*' ) . '*',
+					'fields' => array( 'ID', 'user_login' ),
+				) );
+
+				foreach( $query->results as $user ) {
+					$results[ $user->user_login ] = array(
+						'url'  => get_author_posts_url( $user->ID ),
+						'id'   => $user->ID,
+						'type' => 'user',
+					);
+				}
+
+				break;
+
 		}
 
 		if ( empty( $results ) ) {

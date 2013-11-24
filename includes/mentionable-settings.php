@@ -31,9 +31,10 @@ class Mentionable_Settings {
 		add_action( 'admin_init', array( $this, 'register_settings' ) );
 
 		$defaults = array(
-			'post_types'              => array( 'post' ),
-			'autocomplete_post_types' => array( 'post' ),
-			'load_template'           => false,
+			'post_types'		    => array( 'post' ),
+			'autocomplete_post_types'   => array( 'post' ),
+			'autocomplete_object_type'  => 'post',
+			'load_template'		    => false,
 		);
 
 		self::$options = apply_filters(
